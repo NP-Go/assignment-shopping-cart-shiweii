@@ -18,7 +18,7 @@ func (s ShoppingList) list() {
 			fmt.Printf("Category: %s - Item: %s Quantity: %d Unit Coast: %.2f\n", category[i.category], n, i.quantity, i.cost)
 		}
 	} else {
-		fmt.Println("No data found!")
+		fmt.Println(noData)
 	}
 	mainMenu()
 }
@@ -54,7 +54,7 @@ func (s ShoppingList) print() {
 			fmt.Printf("%s - {%d %d %.2f}\n", i, k.category, k.quantity, k.cost)
 		}
 	} else {
-		fmt.Println("No data found!")
+		fmt.Println(noData)
 	}
 	mainMenu()
 }
@@ -115,7 +115,7 @@ func (s ShoppingList) add() {
 				break
 			}
 		} else {
-			fmt.Println("No Input Found!")
+			fmt.Println(noInput)
 		}
 	}
 
@@ -130,7 +130,7 @@ func (s ShoppingList) add() {
 				fmt.Println("\nCategory entered is not valid, please enter another category.")
 			}
 		} else {
-			fmt.Println("No Input Found!")
+			fmt.Println(noInput)
 		}
 	}
 
@@ -175,110 +175,114 @@ func (s ShoppingList) modify() {
 	fmt.Println("Modify Item")
 	fmt.Println("===========")
 
-	for {
-		fmt.Println("\nWhat item would you wish to modify?")
-		ret := readInput()
-		if (len(ret)) > 0 {
-			if k, exist := s.containsIgnoreCase(ret); exist {
-				nameOld = k
-				item = shoppingList[nameOld]
-				item.print(nameOld)
-				break
-			} else {
-				fmt.Printf("\nItem [%s] does not exist in the Shopping List.", nameOld)
-			}
-		} else {
-			fmt.Println("No Input Found!")
-		}
-	}
-
-	fmt.Println("\nEnter new name. Enter for no change.")
-	nameNew = readInput()
-	if (len(nameNew)) > 0 {
-		delete(shoppingList, nameOld)
-		shoppingList[nameNew] = item
-	} else {
-		nameNew = nameOld
-	}
-
-	for {
-		fmt.Printf("\nEnter new Category. Enter for no change. [Current value: %s]\n", category[item.category])
-		cat := readInput()
-		if len(cat) > 0 {
-			if v, exist := category.containsIgnoreCase(cat); exist {
-				itemNew.category = v
-				break
-			} else {
-				fmt.Println("\nCategory enter does not exist. Either enter a existing category or create a new Category")
-			}
-		} else {
-			itemNew.category = item.category
-			break
-		}
-	}
-
-	for {
-		fmt.Printf("\nEnter new Quantity. Enter for no change. [Current value: %d]\n", item.quantity)
-		ret := readInput()
-		if len(ret) > 0 {
-			if v, err := strconv.Atoi(ret); err == nil {
-				if v > 0 {
-					itemNew.quantity = v
+	if len(s) > 0 {
+		for {
+			fmt.Println("\nWhat item would you wish to modify?")
+			ret := readInput()
+			if (len(ret)) > 0 {
+				if k, exist := s.containsIgnoreCase(ret); exist {
+					nameOld = k
+					item = shoppingList[nameOld]
+					item.print(nameOld)
 					break
 				} else {
-					fmt.Println("Quantity cannot be negative")
+					fmt.Printf("\nItem [%s] does not exist in the Shopping List.", nameOld)
 				}
 			} else {
-				fmt.Println("Please enter a valid Quantity.")
+				fmt.Println(noInput)
 			}
-		} else {
-			itemNew.quantity = item.quantity
-			break
 		}
-	}
 
-	for {
-		fmt.Printf("\nEnter new Cost. Enter for no change. [Current value: %.2f]\n", item.cost)
-		ret := readInput()
-		if len(ret) > 0 {
-			if v, err := strconv.ParseFloat(ret, 64); err == nil {
-				if v > 0 {
-					itemNew.cost = v
+		fmt.Println("\nEnter new name. Enter for no change.")
+		nameNew = readInput()
+		if (len(nameNew)) > 0 {
+			delete(shoppingList, nameOld)
+			shoppingList[nameNew] = item
+		} else {
+			nameNew = nameOld
+		}
+
+		for {
+			fmt.Printf("\nEnter new Category. Enter for no change. [Current value: %s]\n", category[item.category])
+			cat := readInput()
+			if len(cat) > 0 {
+				if v, exist := category.containsIgnoreCase(cat); exist {
+					itemNew.category = v
 					break
 				} else {
-					fmt.Println("Cost cannot be negative.")
+					fmt.Println("\nCategory enter does not exist. Either enter a existing category or create a new Category")
 				}
 			} else {
-				fmt.Println("Please enter a valid Cost.")
+				itemNew.category = item.category
+				break
 			}
+		}
+
+		for {
+			fmt.Printf("\nEnter new Quantity. Enter for no change. [Current value: %d]\n", item.quantity)
+			ret := readInput()
+			if len(ret) > 0 {
+				if v, err := strconv.Atoi(ret); err == nil {
+					if v > 0 {
+						itemNew.quantity = v
+						break
+					} else {
+						fmt.Println("Quantity cannot be negative")
+					}
+				} else {
+					fmt.Println("Please enter a valid Quantity.")
+				}
+			} else {
+				itemNew.quantity = item.quantity
+				break
+			}
+		}
+
+		for {
+			fmt.Printf("\nEnter new Cost. Enter for no change. [Current value: %.2f]\n", item.cost)
+			ret := readInput()
+			if len(ret) > 0 {
+				if v, err := strconv.ParseFloat(ret, 64); err == nil {
+					if v > 0 {
+						itemNew.cost = v
+						break
+					} else {
+						fmt.Println("Cost cannot be negative.")
+					}
+				} else {
+					fmt.Println("Please enter a valid Cost.")
+				}
+			} else {
+				itemNew.cost = item.cost
+				break
+			}
+		}
+
+		fmt.Println("")
+
+		if i := strings.Compare(nameOld, nameNew); i == 0 {
+			fmt.Println("No changes to item name made")
+		}
+
+		msg, diff := item.compare(itemNew)
+
+		if diff {
+			shoppingList[nameNew] = itemNew
+		}
+
+		if len(msg) > 0 {
+			for _, r := range msg {
+				fmt.Println(r)
+			}
+		}
+
+		if i := strings.Compare(nameOld, nameNew); i == 0 && diff {
+			fmt.Printf("\n[Item %s modifed]\n", nameNew)
 		} else {
-			itemNew.cost = item.cost
-			break
+			fmt.Printf("\n[Item %s not modifed]\n", nameNew)
 		}
-	}
-
-	fmt.Println("")
-
-	if i := strings.Compare(nameOld, nameNew); i == 0 {
-		fmt.Println("No changes to item name made")
-	}
-
-	msg, diff := item.compare(itemNew)
-
-	if diff {
-		shoppingList[nameNew] = itemNew
-	}
-
-	if len(msg) > 0 {
-		for _, r := range msg {
-			fmt.Println(r)
-		}
-	}
-
-	if i := strings.Compare(nameOld, nameNew); i == 0 && diff {
-		fmt.Printf("\n[Item %s modifed]\n", nameNew)
 	} else {
-		fmt.Printf("\n[Item %s not modifed]\n", nameNew)
+		fmt.Println(shpListEmpty)
 	}
 
 	mainMenu()
@@ -302,11 +306,11 @@ func (i ShoppingList) delete() {
 					fmt.Println("\nItem does not exist in the Shopping List.")
 				}
 			} else {
-				fmt.Println("No Input Found!")
+				fmt.Println(noInput)
 			}
 		}
 	} else {
-		fmt.Println("No item in Shopping List to delete!")
+		fmt.Println(shpListEmpty)
 	}
 	mainMenu()
 }

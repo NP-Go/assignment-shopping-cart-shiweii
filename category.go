@@ -57,7 +57,7 @@ func (c *Category) add() {
 				break
 			}
 		} else {
-			fmt.Println("No Input Found!")
+			fmt.Println(noInput)
 		}
 	}
 	mainMenu()
@@ -81,10 +81,10 @@ func (c *Category) modify() {
 					catIdx = v
 					break
 				} else {
-					fmt.Printf("Category [%s] not found!\n", cat)
+					fmt.Printf(catNotFound, cat)
 				}
 			} else {
-				fmt.Println("No Input Found!")
+				fmt.Println(noInput)
 			}
 		}
 		for {
@@ -99,11 +99,11 @@ func (c *Category) modify() {
 					break
 				}
 			} else {
-				fmt.Println("No Input Found!")
+				fmt.Println(noInput)
 			}
 		}
 	} else {
-		fmt.Println("There are no Category to modify!")
+		fmt.Println(catEmpty)
 	}
 	mainMenu()
 }
@@ -126,10 +126,10 @@ func (c *Category) delete() {
 					catOld = category[idx]
 					break
 				} else {
-					fmt.Printf("Category [%s] not found!\n", cat)
+					fmt.Printf(catNotFound, cat)
 				}
 			} else {
-				fmt.Println("No Input Found!")
+				fmt.Println(noInput)
 			}
 		}
 		// Delete Category
@@ -142,7 +142,7 @@ func (c *Category) delete() {
 		r = shoppingList.updateByCategoryIdx(idx)
 		fmt.Printf("[Category of %d items updated]\n", r)
 	} else {
-		fmt.Println("There are no Category to delete!")
+		fmt.Println(catEmpty)
 	}
 	mainMenu()
 }
