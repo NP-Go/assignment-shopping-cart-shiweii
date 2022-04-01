@@ -9,28 +9,6 @@ import (
 
 type ShoppingList map[string]Item
 
-func (i ShoppingList) delete() {
-
-	var input string
-
-	fmt.Println("\n===========")
-	fmt.Println("Delete Item")
-	fmt.Println("===========")
-
-	fmt.Println("\nEnter item name to delete:")
-	fmt.Scanln(&input)
-
-	_, ok := i[input]
-	if ok {
-		delete(i, input)
-		fmt.Println("Deleted", input)
-	} else {
-		fmt.Println("Item not found. Noting to delete!")
-	}
-
-	mainMenu()
-}
-
 func (s ShoppingList) list() {
 	fmt.Println("\n=========================")
 	fmt.Println("Displaying Shopping List")
@@ -96,24 +74,85 @@ func (s ShoppingList) totalCost() {
 	mainMenu()
 }
 
+func (s ShoppingList) contains(v string) bool {
+	if _, ok := s[v]; ok {
+		return true
+	}
+	return false
+}
+
+// Method to check if value exist in Map ignoreing case
+// prevent item of same name but with different case to be inserted into Shopping List
+func (s ShoppingList) containsIgnoreCase(v string) (string, bool) {
+	var d string
+	v = strings.ToUpper(v)
+	for k, _ := range s {
+		if r := strings.Compare(strings.ToUpper(k), strings.ToUpper(v)); r == 0 {
+			d = k
+			return d, true
+		}
+	}
+	return d, false
+}
+
 func (s ShoppingList) add() {
 	var name, cat string
 	var unit, catIdx int
 	var cost float64
 	var item Item
 
-	fmt.Println("\nWhat is the name of your item?")
-	fmt.Scanln(&name)
-	fmt.Println("What category does it belong to?")
-	fmt.Scanln(&cat)
-	fmt.Println("How many units are these?")
-	fmt.Scanln(&unit)
-	fmt.Println("How much does it cost per units?")
-	fmt.Scanln(&cost)
+	fmt.Println("\n============")
+	fmt.Println("Add New Item")
+	fmt.Println("============")
 
-	for i, name := range category {
-		if strings.ToUpper(cat) == strings.ToUpper(name) {
-			catIdx = i
+	for {
+		fmt.Println("\nWhat is the name of your item?")
+		name = readInput()
+		if len(name) > 0 {
+			if _, exist := s.containsIgnoreCase(name); exist {
+				fmt.Println("\nItem already exist in the Shopping List.")
+			} else {
+				break
+			}
+		} else {
+			fmt.Println("No Input Found!")
+		}
+	}
+
+	for {
+		fmt.Println("\nWhat category does it belong to?")
+		cat = readInput()
+		if len(name) > 0 {
+			if i, exist := category.containsIgnoreCase(cat); exist {
+				catIdx = i
+				break
+			} else {
+				fmt.Println("\nCategory entered is not valid, please enter another category.")
+			}
+		} else {
+			fmt.Println("No Input Found!")
+		}
+	}
+
+	for {
+		fmt.Println("\nHow many units are these?")
+		r, ok := readInputAsInt()
+		if ok {
+			unit = r
+			break
+		} else {
+			fmt.Println("\nUnit entered is not valid, please re-enter unit.")
+		}
+	}
+
+	for {
+		fmt.Println("\nHow much does it cost per units?")
+		r, ok := readInputAsFloat()
+		if ok {
+			cost = r
+			break
+		} else {
+			fmt.Println("\nUnit entered is not valid, please re-enter cost.")
 		}
 	}
 
@@ -123,112 +162,174 @@ func (s ShoppingList) add() {
 
 	shoppingList[name] = item
 
+	fmt.Println("\n[New item", name, "created]")
+
 	mainMenu()
 }
 
 func (s ShoppingList) modify() {
-	var nameInput, catInput, qtyInput, costInput string
-	var nameCur, nameNew, catNew string
-	var qtyNew int
-	var costNew float64
-	var itemNew Item
-	//var item Item
+	var item, itemNew Item
+	var nameOld, nameNew string
 
-	fmt.Println("\nWhat item would you wish to modify?")
-	fmt.Scanln(&nameCur)
+	fmt.Println("\n===========")
+	fmt.Println("Modify Item")
+	fmt.Println("===========")
 
-	item, found := shoppingList[nameCur]
-
-	if found {
-		item.print(nameCur)
+	for {
+		fmt.Println("\nWhat item would you wish to modify?")
+		ret := readInput()
+		if (len(ret)) > 0 {
+			if k, exist := s.containsIgnoreCase(ret); exist {
+				nameOld = k
+				item = shoppingList[nameOld]
+				item.print(nameOld)
+				break
+			} else {
+				fmt.Printf("\nItem [%s] does not exist in the Shopping List.", nameOld)
+			}
+		} else {
+			fmt.Println("No Input Found!")
+		}
 	}
 
 	fmt.Println("\nEnter new name. Enter for no change.")
-	fmt.Scanln(&nameInput)
-	nameNew = strings.TrimSpace(nameInput)
-
+	nameNew = readInput()
 	if (len(nameNew)) > 0 {
-		for i, v := range shoppingList {
-			if i == nameCur {
-				delete(shoppingList, nameCur)
-				shoppingList[nameNew] = v
+		delete(shoppingList, nameOld)
+		shoppingList[nameNew] = item
+	} else {
+		nameNew = nameOld
+	}
+
+	for {
+		fmt.Printf("\nEnter new Category. Enter for no change. [Current value: %s]\n", category[item.category])
+		cat := readInput()
+		if len(cat) > 0 {
+			if v, exist := category.containsIgnoreCase(cat); exist {
+				itemNew.category = v
+				break
+			} else {
+				fmt.Println("\nCategory enter does not exist. Either enter a existing category or create a new Category")
 			}
-		}
-	} else {
-		nameNew = nameCur
-	}
-
-	fmt.Println("\nEnter new Category. Enter for no change.")
-	fmt.Scanln(&catInput)
-	catNew = strings.TrimSpace(catInput)
-	if (len(catNew)) > 0 {
-		if category.contains(catNew) {
-			idx := category.getIndexByName(catNew)
-			itemNew.category = idx
 		} else {
-			fmt.Println("Category enter does not exist. Either enter a existing category or create a new Category")
+			itemNew.category = item.category
+			break
 		}
-	} else {
-		itemNew.category = item.category
 	}
 
-	fmt.Println("\nEnter new Quantity. Enter for no change.")
-	fmt.Scanln(&qtyInput)
-	qtyInput = strings.TrimSpace(qtyInput)
-	if (len(qtyInput)) > 0 {
-		qtyNew, _ = strconv.Atoi(qtyInput)
-		if qtyNew > 0 {
-			itemNew.quantity = qtyNew
+	for {
+		fmt.Printf("\nEnter new Quantity. Enter for no change. [Current value: %d]\n", item.quantity)
+		ret := readInput()
+		if len(ret) > 0 {
+			if v, err := strconv.Atoi(ret); err == nil {
+				if v > 0 {
+					itemNew.quantity = v
+					break
+				} else {
+					fmt.Println("Quantity cannot be negative")
+				}
+			} else {
+				fmt.Println("Please enter a valid Quantity.")
+			}
 		} else {
-			fmt.Println("Quantity cannot be negative")
+			itemNew.quantity = item.quantity
+			break
 		}
-	} else {
-		itemNew.quantity = item.quantity
 	}
 
-	fmt.Println("\nEnter new Cost. Enter for no change.")
-	fmt.Scanln(&costInput)
-	costInput = strings.TrimSpace(costInput)
-	if (len(costInput)) > 0 {
-		costNew, _ = strconv.ParseFloat(costInput, 64)
-		if costNew > 0 {
-			itemNew.cost = costNew
+	for {
+		fmt.Printf("\nEnter new Cost. Enter for no change. [Current value: %.2f]\n", item.cost)
+		ret := readInput()
+		if len(ret) > 0 {
+			if v, err := strconv.ParseFloat(ret, 64); err == nil {
+				if v > 0 {
+					itemNew.cost = v
+					break
+				} else {
+					fmt.Println("Cost cannot be negative.")
+				}
+			} else {
+				fmt.Println("Please enter a valid Cost.")
+			}
 		} else {
-			fmt.Println("Cost cannot be negative")
+			itemNew.cost = item.cost
+			break
 		}
-	} else {
-		itemNew.cost = item.cost
 	}
 
-	if nameCur == nameNew {
+	fmt.Println("")
+
+	if i := strings.Compare(nameOld, nameNew); i == 0 {
 		fmt.Println("No changes to item name made")
 	}
 
-	res := item.isDifferent(itemNew)
+	msg, diff := item.compare(itemNew)
 
-	if len(res) > 0 {
-		for _, r := range res {
+	if diff {
+		shoppingList[nameNew] = itemNew
+	}
+
+	if len(msg) > 0 {
+		for _, r := range msg {
 			fmt.Println(r)
 		}
-		shoppingList[nameNew] = itemNew
+	}
+
+	if i := strings.Compare(nameOld, nameNew); i == 0 && diff {
+		fmt.Printf("\n[Item %s modifed]\n", nameNew)
+	} else {
+		fmt.Printf("\n[Item %s not modifed]\n", nameNew)
 	}
 
 	mainMenu()
 }
 
-func (s ShoppingList) deleteByCategoryIdx(v int) {
+func (i ShoppingList) delete() {
+	var name string
+	fmt.Println("\n===========")
+	fmt.Println("Delete Item")
+	fmt.Println("===========")
+	if len(i) > 0 {
+		for {
+			fmt.Println("\nEnter item name to delete:")
+			name = readInput()
+			if len(name) > 0 {
+				if k, exist := i.containsIgnoreCase(name); exist {
+					delete(i, k)
+					fmt.Printf("\n[Item %s deleted from Shopping List]\n", k)
+					break
+				} else {
+					fmt.Println("\nItem does not exist in the Shopping List.")
+				}
+			} else {
+				fmt.Println("No Input Found!")
+			}
+		}
+	} else {
+		fmt.Println("No item in Shopping List to delete!")
+	}
+	mainMenu()
+}
+
+func (s ShoppingList) deleteByCategoryIdx(v int) int {
+	var count int
 	for p, r := range s {
 		if r.category == v {
+			count++
 			delete(s, p)
 		}
 	}
+	return count
 }
 
-func (s ShoppingList) updateByCategoryIdx(v int) {
+func (s ShoppingList) updateByCategoryIdx(v int) int {
+	var count int
 	for p, r := range s {
 		if r.category > v {
+			count++
 			r.category = r.category - 1
 			s[p] = r
 		}
 	}
+	return count
 }

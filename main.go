@@ -1,29 +1,40 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"os"
 	"sort"
-	"strconv"
-	"strings"
 )
 
 var category Category
 var shoppingList ShoppingList
+var shoppingList2 ShoppingList
 var menuSelection map[int]string
-var shoppingSlice []map[string]Item
+var shoppingListSlice []map[string]Item
+
+// Default to first shopping list
+var selectedList int = 0
 
 func generateReport() {
 	var reportSelection int
-	fmt.Println("\n================")
-	fmt.Println("Generate Report")
-	fmt.Println("================")
-	fmt.Println("1. Total Cost of each category.")
-	fmt.Println("2. List of item by category.")
-	fmt.Println("3. Main Menu.")
-	fmt.Println("\nChoose your report:")
-	fmt.Scanln(&reportSelection)
+
+	for {
+		fmt.Println("\n================")
+		fmt.Println("Generate Report")
+		fmt.Println("================")
+		fmt.Println("1. Total Cost of each category.")
+		fmt.Println("2. List of item by category.")
+		fmt.Println("3. Main Menu.")
+		fmt.Println("\nChoose your report:")
+		v, b := readInputAsInt()
+		if b {
+			reportSelection = v
+			break
+		} else {
+			fmt.Println("\nInvalid input, please select a valid option.")
+		}
+	}
+
 	switch reportSelection {
 	case 1:
 		shoppingList.totalCost()
@@ -36,13 +47,46 @@ func generateReport() {
 	}
 }
 
+func createShoppingList() {
+	newShoppingList := make(map[string]Item)
+	shoppingListSlice = append(shoppingListSlice, newShoppingList)
+	shoppingList = newShoppingList
+	selectedList = len(shoppingListSlice) - 1
+	fmt.Println("\nNew Shopping List created at:", selectedList)
+	fmt.Println("\nUsing new Shopping List", selectedList)
+	shoppingList = shoppingListSlice[selectedList]
+	mainMenu()
+}
+
+func setShoppingList() {
+	var input int
+	for {
+		fmt.Println("\nSelect Shopping List by index:")
+		v, b := readInputAsInt()
+		if b {
+			input = v
+			break
+		} else {
+			fmt.Println("\nInvalid input, please select the shoping list by index.")
+		}
+	}
+	if input > len(shoppingListSlice)-1 {
+		fmt.Println("\nNo Shopping List at index", input, "please create a new shopping list.")
+	} else {
+		selectedList = input
+		shoppingList = shoppingListSlice[selectedList]
+	}
+	mainMenu()
+}
+
 func mainMenu() {
 
 	var optionSelected int
 
 	fmt.Println("\nShopping List Application")
 	fmt.Println("=========================")
-
+	fmt.Println("Currently in Shopping list:", selectedList, "out of", len(shoppingListSlice)-1)
+	fmt.Println("-------------------------------")
 	// To store the keys in slice in sorted order
 	menu := make([]int, len(menuSelection))
 	i := 0
@@ -59,20 +103,23 @@ func mainMenu() {
 		// Display main menu
 		fmt.Println("\nSelect your choice:")
 		// Gather user input.
-		inputReader := bufio.NewReader(os.Stdin)
-		selection, _ := inputReader.ReadString('\n')
-		selection = strings.TrimSpace(selection)
-		// Check that user input valid selection
-		value, _ := strconv.Atoi(selection)
-		_, inMenuSelectionMap := menuSelection[value]
-		if inMenuSelectionMap {
-			fmt.Printf("Selected [%s]\n", menuSelection[value])
-			optionSelected = value
-			break
+		r, ok := readInputAsInt()
+
+		if ok {
+			_, inMenuSelectionMap := menuSelection[r]
+			if inMenuSelectionMap {
+				fmt.Printf("\nSelected [%s]\n", menuSelection[r])
+				optionSelected = r
+				break
+			} else {
+				fmt.Println("\nInvalid choice, please select your choice.")
+				fmt.Println("==========================================")
+				fmt.Println("Currently in Shopping list:", selectedList, "out of", len(shoppingListSlice)-1)
+			}
 		} else {
+			fmt.Println("\nInvalid choice, please select your choice.")
 			fmt.Println("==========================================")
-			fmt.Println("Invalid choice, please select your choice.")
-			fmt.Println("==========================================")
+			fmt.Println("Currently in Shopping list:", selectedList, "out of", len(shoppingListSlice)-1)
 		}
 	}
 
@@ -96,6 +143,10 @@ func mainMenu() {
 	case 9:
 		category.delete()
 	case 10:
+		createShoppingList()
+	case 11:
+		setShoppingList()
+	case 12:
 		os.Exit(0)
 	}
 }
@@ -117,8 +168,16 @@ func init() {
 		"Sprite": {category: 2, quantity: 5, cost: 2},
 	}
 
+	// Init Shopping List 2 Data
+	shoppingList2 = map[string]Item{
+		"Fork":   {category: 0, quantity: 4, cost: 3},
+		"Plates": {category: 0, quantity: 4, cost: 3},
+	}
+
 	// Init Shopping List Slice
-	shoppingSlice = append(shoppingSlice, shoppingList)
+	shoppingListSlice = append(shoppingListSlice, shoppingList)
+	shoppingListSlice = append(shoppingListSlice, shoppingList2)
+	shoppingList = shoppingListSlice[selectedList]
 
 	// Init Menu
 	menuSelection = map[int]string{
@@ -131,7 +190,9 @@ func init() {
 		7:  "Add New Category Name",
 		8:  "Modify Category Name",
 		9:  "Delete Category",
-		10: "Exit",
+		10: "Create new Shopping List",
+		11: "Retrieve Previous Shopping List",
+		12: "Exit",
 	}
 }
 

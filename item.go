@@ -19,16 +19,23 @@ func (i Item) totalCost() float64 {
 	return float64(tc)
 }
 
-func (i Item) isDifferent(in Item) []string {
-	var res []string
-	if i.category == in.category {
-		res = append(res, "No changes to category made.")
+func (i Item) compare(in Item) ([]string, bool) {
+	var msg []string
+	var isDiff bool = false
+	if i.category != in.category {
+		isDiff = true
+	} else {
+		msg = append(msg, "No changes to category made.")
 	}
-	if i.quantity == in.quantity {
-		res = append(res, "No changes to quantity made.")
+	if i.quantity != in.quantity {
+		isDiff = true
+	} else {
+		msg = append(msg, "No changes to quantity made.")
 	}
-	if i.cost == in.cost {
-		res = append(res, "No changes to cost made.")
+	if i.cost != in.cost {
+		isDiff = true
+	} else {
+		msg = append(msg, "No changes to cost made.")
 	}
-	return res
+	return msg, isDiff
 }
