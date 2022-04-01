@@ -8,76 +8,11 @@ import (
 
 var category Category
 var shoppingList ShoppingList
-var shoppingList2 ShoppingList
 var menuSelection map[int]string
 var shoppingListSlice []map[string]Item
 
 // Default to first shopping list
 var selectedList int = 0
-
-func generateReport() {
-	var reportSelection int
-
-	for {
-		fmt.Println("\n================")
-		fmt.Println("Generate Report")
-		fmt.Println("================")
-		fmt.Println("1. Total Cost of each category.")
-		fmt.Println("2. List of item by category.")
-		fmt.Println("3. Main Menu.")
-		fmt.Println("\nChoose your report:")
-		v, b := readInputAsInt()
-		if b {
-			reportSelection = v
-			break
-		} else {
-			fmt.Println("\nInvalid input, please select a valid option.")
-		}
-	}
-
-	switch reportSelection {
-	case 1:
-		shoppingList.totalCost()
-	case 2:
-		fmt.Println("\nList by Category")
-		fmt.Println("----------------")
-		shoppingList.listSorted()
-	case 3:
-		mainMenu()
-	}
-}
-
-func createShoppingList() {
-	newShoppingList := make(map[string]Item)
-	shoppingListSlice = append(shoppingListSlice, newShoppingList)
-	shoppingList = newShoppingList
-	selectedList = len(shoppingListSlice) - 1
-	fmt.Println("\nNew Shopping List created at:", selectedList)
-	fmt.Println("\nUsing new Shopping List", selectedList)
-	shoppingList = shoppingListSlice[selectedList]
-	mainMenu()
-}
-
-func setShoppingList() {
-	var input int
-	for {
-		fmt.Println("\nSelect Shopping List by index:")
-		v, b := readInputAsInt()
-		if b {
-			input = v
-			break
-		} else {
-			fmt.Println("\nInvalid input, please select the shoping list by index.")
-		}
-	}
-	if input > len(shoppingListSlice)-1 {
-		fmt.Println("\nNo Shopping List at index", input, "please create a new shopping list.")
-	} else {
-		selectedList = input
-		shoppingList = shoppingListSlice[selectedList]
-	}
-	mainMenu()
-}
 
 func mainMenu() {
 
@@ -129,19 +64,19 @@ func mainMenu() {
 	case 2:
 		generateReport()
 	case 3:
-		shoppingList.add()
+		addItem()
 	case 4:
-		shoppingList.modify()
+		modifyItem()
 	case 5:
-		shoppingList.delete()
+		deleteItem()
 	case 6:
 		shoppingList.print()
 	case 7:
-		category.add()
+		addCategory()
 	case 8:
-		category.modify()
+		modifyCategory()
 	case 9:
-		category.delete()
+		deleteCategory()
 	case 10:
 		createShoppingList()
 	case 11:
@@ -149,6 +84,7 @@ func mainMenu() {
 	case 12:
 		os.Exit(0)
 	}
+	mainMenu()
 }
 
 func init() {
@@ -169,7 +105,7 @@ func init() {
 	}
 
 	// Init Shopping List 2 Data
-	shoppingList2 = map[string]Item{
+	shoppingList2 := map[string]Item{
 		"Fork":   {category: 0, quantity: 4, cost: 3},
 		"Plates": {category: 0, quantity: 4, cost: 3},
 	}
@@ -197,5 +133,6 @@ func init() {
 }
 
 func main() {
+
 	mainMenu()
 }
