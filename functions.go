@@ -68,7 +68,7 @@ func addItem() {
 					detail.category = i
 					break
 				} else {
-					fmt.Println("\nCategory entered is not valid, please enter another category.")
+					fmt.Println("Category entered is not valid, please enter another category.")
 				}
 			} else {
 				fmt.Printf("\nCategory is empty, a new Category [%s] will be created.\n", cat)
@@ -85,10 +85,14 @@ func addItem() {
 		fmt.Println("\nHow many units are these?")
 		r, ok := readInputAsInt()
 		if ok {
-			detail.quantity = r
-			break
+			if r >= 0 {
+				detail.quantity = r
+				break
+			} else {
+				fmt.Println("Quantity cannot be negative")
+			}
 		} else {
-			fmt.Println("\nUnit entered is not valid, please re-enter unit.")
+			fmt.Println("Unit entered is not valid, please re-enter unit.")
 		}
 	}
 
@@ -96,16 +100,21 @@ func addItem() {
 		fmt.Println("\nHow much does it cost per units?")
 		r, ok := readInputAsFloat()
 		if ok {
-			detail.cost = r
-			break
+			if r > 0 {
+				detail.cost = r
+				break
+			} else {
+				fmt.Println("Cost cannot be zero or negative.")
+			}
 		} else {
-			fmt.Println("\nUnit entered is not valid, please re-enter cost.")
+			fmt.Println("Cost entered is not valid, please re-enter cost.")
 		}
 	}
 
 	shoppingList.add(detail)
 
 	fmt.Println("\n[New item", detail.name, "created]")
+	detail.print()
 }
 
 func modifyItem() {
@@ -130,7 +139,7 @@ func modifyItem() {
 						cost:     item.cost,
 					}
 					detailNew = detail
-					detail.print()
+					detail.printCurrent()
 					break
 				} else {
 					fmt.Printf("\nItem [%s] does not exist in the Shopping List.\n", name)
@@ -169,7 +178,7 @@ func modifyItem() {
 			qty := readInput()
 			if len(qty) > 0 {
 				if ret, err := strconv.Atoi(qty); err == nil {
-					if ret > 0 {
+					if ret >= 0 {
 						detailNew.quantity = ret
 						break
 					} else {
@@ -193,7 +202,7 @@ func modifyItem() {
 						detailNew.cost = ret
 						break
 					} else {
-						fmt.Println("Cost cannot be negative.")
+						fmt.Println("Cost cannot be zero or negative.")
 					}
 				} else {
 					fmt.Println("Please enter a valid Cost.")
@@ -223,6 +232,10 @@ func modifyItem() {
 				shoppingList.add(detailNew)
 			}
 			fmt.Printf("\n[Item %s modifed]\n", detail.name)
+			fmt.Println("[Old data:]")
+			detail.print()
+			fmt.Println("[New data:]")
+			detailNew.print()
 		} else {
 			fmt.Printf("\n[Item %s not modifed]\n", detailNew.name)
 		}

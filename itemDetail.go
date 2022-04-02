@@ -9,8 +9,12 @@ type itemDetail struct {
 	cost     float64
 }
 
-func (i itemDetail) print() {
+func (i itemDetail) printCurrent() {
 	fmt.Printf("Current item name is %s - Category is %s - Quantity is %d - Unit Cost is %.2f\n", i.name, category[i.category], i.quantity, i.cost)
+}
+
+func (i itemDetail) print() {
+	fmt.Printf("[Item name is %s - Category is %s - Quantity is %d - Unit Cost is %.2f]\n", i.name, category[i.category], i.quantity, i.cost)
 }
 
 func (i itemDetail) mapItem() Item {
