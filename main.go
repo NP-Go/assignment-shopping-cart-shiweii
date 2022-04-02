@@ -84,6 +84,10 @@ func mainMenu() {
 	case 12:
 		os.Exit(0)
 	}
+
+	fmt.Println("\nPress any key to continue...")
+	_, _ = fmt.Scanln()
+
 	mainMenu()
 }
 

@@ -206,7 +206,7 @@ func modifyItem() {
 
 		// Print message if any changes are not made
 		if len(msg) > 0 {
-			fmt.Printf("")
+			fmt.Printf("\n")
 			for _, r := range msg {
 				fmt.Println(r)
 			}
@@ -224,7 +224,7 @@ func modifyItem() {
 			}
 			fmt.Printf("\n[Item %s modifed]\n", detail.name)
 		} else {
-			fmt.Printf("\n[Item %s not modifed]\n", detail.name)
+			fmt.Printf("\n[Item %s not modifed]\n", detailNew.name)
 		}
 	} else {
 		fmt.Println(shpListEmpty)
@@ -293,13 +293,14 @@ func modifyCategory() {
 	if (len(category)) > 0 {
 		for {
 			fmt.Println("\nWhich Category name to modify?")
-			cat = readInput()
-			if (len(cat)) > 0 {
-				if v, exist := category.containsIgnoreCase(cat); exist {
+			i := readInput()
+			if (len(i)) > 0 {
+				if v, exist := category.containsIgnoreCase(i); exist {
 					catIdx = v
+					cat = category[catIdx]
 					break
 				} else {
-					fmt.Printf(catNotFound, cat)
+					fmt.Printf(catNotFound, i)
 				}
 			} else {
 				fmt.Println(noInput)
@@ -309,7 +310,7 @@ func modifyCategory() {
 			fmt.Println("\nPlease enter new Category name:")
 			catNew = readInput()
 			if (len(catNew)) > 0 {
-				if exist := category.contains(catNew); exist {
+				if category.contains(catNew) {
 					fmt.Printf("Same Category name is entered\n")
 				} else {
 					category[catIdx] = catNew
