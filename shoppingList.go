@@ -83,8 +83,7 @@ func (s ShoppingList) contains(v string) bool {
 // prevent item of same name but with different case to be inserted into Shopping List
 func (s ShoppingList) containsIgnoreCase(key string) (string, bool) {
 	var d string
-	key = strings.ToUpper(key)
-	for k, _ := range s {
+	for k := range s {
 		if r := strings.Compare(strings.ToUpper(k), strings.ToUpper(key)); r == 0 {
 			d = k
 			return d, true
