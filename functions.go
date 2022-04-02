@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"reflect"
 	"strconv"
+	"strings"
 )
 
 func generateReport() {
@@ -30,7 +31,7 @@ func generateReport() {
 	case 1:
 		shoppingList.totalCost()
 	case 2:
-		shoppingList.listSorted()
+		shoppingList.printSortedMap()
 	case 3:
 		mainMenu()
 	}
@@ -62,11 +63,18 @@ func addItem() {
 		fmt.Println("\nWhat category does it belong to?")
 		cat := readInput()
 		if len(cat) > 0 {
-			if i, exist := category.containsIgnoreCase(cat); exist {
-				detail.item.category = i
-				break
+			if len(category) > 0 {
+				if i, exist := category.containsIgnoreCase(cat); exist {
+					detail.category = i
+					break
+				} else {
+					fmt.Println("\nCategory entered is not valid, please enter another category.")
+				}
 			} else {
-				fmt.Println("\nCategory entered is not valid, please enter another category.")
+				fmt.Printf("\nCategory is empty, a new Category [%s] will be created.\n", cat)
+				category = append(category, cat)
+				detail.category = category.getIndexByName(cat)
+				break
 			}
 		} else {
 			fmt.Println(noInput)
@@ -77,7 +85,7 @@ func addItem() {
 		fmt.Println("\nHow many units are these?")
 		r, ok := readInputAsInt()
 		if ok {
-			detail.item.quantity = r
+			detail.quantity = r
 			break
 		} else {
 			fmt.Println("\nUnit entered is not valid, please re-enter unit.")
@@ -88,20 +96,19 @@ func addItem() {
 		fmt.Println("\nHow much does it cost per units?")
 		r, ok := readInputAsFloat()
 		if ok {
-			detail.item.cost = r
+			detail.cost = r
 			break
 		} else {
 			fmt.Println("\nUnit entered is not valid, please re-enter cost.")
 		}
 	}
 
-	shoppingList[detail.name] = detail.item
+	shoppingList.add(detail)
 
 	fmt.Println("\n[New item", detail.name, "created]")
 }
 
 func modifyItem() {
-	var nameOld, nameNew string
 	var detail, detailNew itemDetail
 	var msg []string
 
@@ -114,16 +121,19 @@ func modifyItem() {
 			fmt.Println("\nWhat item would you wish to modify?")
 			name := readInput()
 			if (len(name)) > 0 {
-				if k, exist := shoppingList.containsIgnoreCase(name); exist {
+				if key, exist := shoppingList.containsIgnoreCase(name); exist {
+					item := shoppingList[key]
 					detail = itemDetail{
-						name: k,
-						item: shoppingList[k],
+						name:     key,
+						category: item.category,
+						quantity: item.quantity,
+						cost:     item.cost,
 					}
 					detailNew = detail
 					detail.print()
 					break
 				} else {
-					fmt.Printf("\nItem [%s] does not exist in the Shopping List.", nameOld)
+					fmt.Printf("\nItem [%s] does not exist in the Shopping List.\n", name)
 				}
 			} else {
 				fmt.Println(noInput)
@@ -131,19 +141,19 @@ func modifyItem() {
 		}
 
 		fmt.Println("\nEnter new name. Enter for no change.")
-		nameNew = readInput()
-		if (len(nameNew)) > 0 {
-			detailNew.name = nameNew
+		name := readInput()
+		if (len(name)) > 0 {
+			detailNew.name = name
 		} else {
 			msg = append(msg, "No changes to item name made.")
 		}
 
 		for {
-			fmt.Printf("\nEnter new Category. Enter for no change. [Current value: %s]\n", category[detail.item.category])
+			fmt.Printf("\nEnter new Category. Enter for no change. [Current value: %s]\n", category[detail.category])
 			cat := readInput()
 			if len(cat) > 0 {
 				if ret, exist := category.containsIgnoreCase(cat); exist {
-					detailNew.item.category = ret
+					detailNew.category = ret
 					break
 				} else {
 					fmt.Println("\nCategory enter does not exist. Either enter a existing category or create a new Category")
@@ -155,12 +165,12 @@ func modifyItem() {
 		}
 
 		for {
-			fmt.Printf("\nEnter new Quantity. Enter for no change. [Current value: %d]\n", detail.item.quantity)
+			fmt.Printf("\nEnter new Quantity. Enter for no change. [Current value: %d]\n", detail.quantity)
 			qty := readInput()
 			if len(qty) > 0 {
 				if ret, err := strconv.Atoi(qty); err == nil {
 					if ret > 0 {
-						detailNew.item.quantity = ret
+						detailNew.quantity = ret
 						break
 					} else {
 						fmt.Println("Quantity cannot be negative")
@@ -175,12 +185,12 @@ func modifyItem() {
 		}
 
 		for {
-			fmt.Printf("\nEnter new Cost. Enter for no change. [Current value: %.2f]\n", detail.item.cost)
+			fmt.Printf("\nEnter new Cost. Enter for no change. [Current value: %.2f]\n", detail.cost)
 			cost := readInput()
 			if len(cost) > 0 {
 				if ret, err := strconv.ParseFloat(cost, 64); err == nil {
 					if ret > 0 {
-						detailNew.item.cost = ret
+						detailNew.cost = ret
 						break
 					} else {
 						fmt.Println("Cost cannot be negative.")
@@ -194,6 +204,7 @@ func modifyItem() {
 			}
 		}
 
+		// Print message if any changes are not made
 		if len(msg) > 0 {
 			fmt.Printf("")
 			for _, r := range msg {
@@ -201,12 +212,19 @@ func modifyItem() {
 			}
 		}
 
+		// Check if and changes were made
 		if !reflect.DeepEqual(detail, detailNew) {
-			delete(shoppingList, detail.name)
-			shoppingList[detailNew.name] = detailNew.item
-			fmt.Printf("\n[Item %s modifed]\n", detailNew.name)
+			// If name(key) is not change, update value only
+			if ret := strings.Compare(detail.name, detailNew.name); ret == 0 {
+				shoppingList.modify(detail.name, detailNew)
+			} else {
+				// Else delete old key from map and add new key:value
+				shoppingList.delete(detail.name)
+				shoppingList.add(detailNew)
+			}
+			fmt.Printf("\n[Item %s modifed]\n", detail.name)
 		} else {
-			fmt.Printf("\n[Item %s not modifed]\n", detailNew.name)
+			fmt.Printf("\n[Item %s not modifed]\n", detail.name)
 		}
 	} else {
 		fmt.Println(shpListEmpty)
@@ -224,7 +242,7 @@ func deleteItem() {
 			name = readInput()
 			if len(name) > 0 {
 				if k, exist := shoppingList.containsIgnoreCase(name); exist {
-					delete(shoppingList, k)
+					shoppingList.delete(k)
 					fmt.Printf("\n[Item %s deleted from Shopping List]\n", k)
 					break
 				} else {
@@ -235,7 +253,7 @@ func deleteItem() {
 			}
 		}
 	} else {
-		fmt.Println("No item in Shopping List to delete!")
+		fmt.Println(noData)
 	}
 }
 
@@ -254,7 +272,7 @@ func addCategory() {
 				fmt.Printf("Category [%s] exists!\n", category[v])
 			} else {
 				category = append(category, cat)
-				fmt.Printf("New Category: %s added at index: %d!\n", cat, category.getIndexByName(cat))
+				fmt.Printf("\n[New Category: %s added at index: %d]\n", cat, category.getIndexByName(cat))
 				break
 			}
 		} else {
@@ -359,9 +377,8 @@ func setShoppingList() {
 	var input int
 	for {
 		fmt.Println("\nSelect Shopping List by index:")
-		v, b := readInputAsInt()
-		if b {
-			input = v
+		if ret, ok := readInputAsInt(); ok {
+			input = ret
 			break
 		} else {
 			fmt.Println("\nInvalid input, please select the shoping list by index.")

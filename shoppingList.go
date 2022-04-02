@@ -21,24 +21,23 @@ func (s ShoppingList) list() {
 	}
 }
 
-func (i ShoppingList) listSorted() {
-	type tempItem = struct {
-		name     string
-		category int
-		quantity int
-		cost     float64
-	}
+func (s ShoppingList) printSortedMap() {
+	fmt.Println("\nDisplaying Sorted Shopping List")
+	fmt.Println("-------------------------------")
+	if len(s) > 0 {
+		sortSlice := make([]itemDetail, 0, len(s))
 
-	sortSlice := make([]tempItem, 0, len(i))
+		for i, k := range s {
+			sortSlice = append(sortSlice, itemDetail{name: i, category: k.category, quantity: k.quantity, cost: k.cost})
+		}
 
-	for i, k := range i {
-		sortSlice = append(sortSlice, tempItem{name: i, category: k.category, quantity: k.quantity, cost: k.cost})
-	}
+		sort.Slice(sortSlice, func(i, j int) bool { return sortSlice[i].category < sortSlice[j].category })
 
-	sort.Slice(sortSlice, func(i, j int) bool { return sortSlice[i].category < sortSlice[j].category })
-
-	for _, item := range sortSlice {
-		fmt.Printf("Category: %s - Item: %s Quantity: %d Unit Coast: %.2f\n", category[item.category], item.name, item.quantity, item.cost)
+		for _, item := range sortSlice {
+			fmt.Printf("Category: %s - Item: %s Quantity: %d Unit Coast: %.2f\n", category[item.category], item.name, item.quantity, item.cost)
+		}
+	} else {
+		fmt.Printf("%s\n", noData)
 	}
 }
 
@@ -53,22 +52,24 @@ func (s ShoppingList) print() {
 	} else {
 		fmt.Println(noData)
 	}
-	mainMenu()
 }
 
 func (s ShoppingList) totalCost() {
 	fmt.Println("\nTotal cost by Category")
 	fmt.Println("----------------------")
-	for cIdx, cName := range category {
-		var totalCost float64 = 0
-		for _, item := range s {
-			if item.category == cIdx {
-				totalCost = totalCost + item.totalCost()
+	if len(s) > 0 {
+		for cIdx, cName := range category {
+			var totalCost float64 = 0
+			for _, item := range s {
+				if item.category == cIdx {
+					totalCost = totalCost + item.totalCost()
+				}
 			}
+			fmt.Printf("%s cost: %.2f\n", cName, totalCost)
 		}
-		fmt.Printf("%s cost: %.2f\n", cName, totalCost)
+	} else {
+		fmt.Printf("%s\n", noData)
 	}
-	mainMenu()
 }
 
 func (s ShoppingList) contains(v string) bool {
@@ -80,11 +81,11 @@ func (s ShoppingList) contains(v string) bool {
 
 // Method to check if value exist in Map ignoreing case
 // prevent item of same name but with different case to be inserted into Shopping List
-func (s ShoppingList) containsIgnoreCase(v string) (string, bool) {
+func (s ShoppingList) containsIgnoreCase(key string) (string, bool) {
 	var d string
-	v = strings.ToUpper(v)
+	key = strings.ToUpper(key)
 	for k, _ := range s {
-		if r := strings.Compare(strings.ToUpper(k), strings.ToUpper(v)); r == 0 {
+		if r := strings.Compare(strings.ToUpper(k), strings.ToUpper(key)); r == 0 {
 			d = k
 			return d, true
 		}
@@ -92,10 +93,10 @@ func (s ShoppingList) containsIgnoreCase(v string) (string, bool) {
 	return d, false
 }
 
-func (s ShoppingList) deleteByCategoryIdx(v int) int {
+func (s ShoppingList) deleteByCategoryIdx(idx int) int {
 	var count int
 	for p, r := range s {
-		if r.category == v {
+		if r.category == idx {
 			count++
 			delete(s, p)
 		}
@@ -103,14 +104,32 @@ func (s ShoppingList) deleteByCategoryIdx(v int) int {
 	return count
 }
 
-func (s ShoppingList) updateByCategoryIdx(v int) int {
+func (s ShoppingList) updateByCategoryIdx(cat int) int {
 	var count int
 	for p, r := range s {
-		if r.category > v {
+		if r.category > cat {
 			count++
 			r.category = r.category - 1
 			s[p] = r
 		}
 	}
 	return count
+}
+
+func (s ShoppingList) delete(key string) {
+	delete(s, key)
+}
+
+func (s *ShoppingList) add(id itemDetail) {
+	if len(*s) > 0 {
+		shoppingList[id.name] = id.mapItem()
+	} else {
+		*s = map[string]Item{
+			id.name: id.mapItem(),
+		}
+	}
+}
+
+func (s ShoppingList) modify(key string, id itemDetail) {
+	shoppingList[key] = id.mapItem()
 }

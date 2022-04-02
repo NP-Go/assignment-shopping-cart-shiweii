@@ -20,7 +20,7 @@ func mainMenu() {
 
 	fmt.Println("\nShopping List Application")
 	fmt.Println("=========================")
-	fmt.Println("Currently in Shopping list:", selectedList, "out of", len(shoppingListSlice)-1)
+	fmt.Println("Currently in Shopping list index:", selectedList)
 	fmt.Println("-------------------------------")
 	// To store the keys in slice in sorted order
 	menu := make([]int, len(menuSelection))
@@ -127,12 +127,11 @@ func init() {
 		8:  "Modify Category Name",
 		9:  "Delete Category",
 		10: "Create new Shopping List",
-		11: "Retrieve Previous Shopping List",
+		11: "Retrieve another Shopping List",
 		12: "Exit",
 	}
 }
 
 func main() {
-
 	mainMenu()
 }
